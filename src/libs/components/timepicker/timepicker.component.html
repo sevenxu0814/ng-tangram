@@ -1,0 +1,18 @@
+<input #inputElement class="margin-bottom-0" type="text" (focus)="_onInputFocus()" readonly [placeholder]="placeholder" [disabled]="disabled">
+<span class="nt-datepicker-caret" [@fade] *ngIf="!value || disabled"></span>
+<span class="nt-datepicker-clear" (click)="clear()" [@fade] *ngIf="value && !disabled"></span>
+<nt-overlay
+  [origin]="origin"
+  trigger="click"
+  position="bottomLeft"
+  arrow (afterOpen)="_afterOpen($event)"
+  (afterClosed)="_afterClosed($event)"
+  (beforeOpen)="_beforeOpen($event);"
+  (beforeClosed)="_beforeClosed($event)"
+  (positionChange)="_positionChange($event)">
+  <div class="nt-time-panel" style="background: #fff;">
+    <nt-timepicker-option #hourPanel [time]="hours" [(targetValue)]="hour" (selectChange)="selectHour($event)"></nt-timepicker-option>
+    <nt-timepicker-option [time]="seconds" [(targetValue)]="minute" (selectChange)="selectMinute($event)"></nt-timepicker-option>
+    <nt-timepicker-option [time]="seconds" [(targetValue)]="second" (selectChange)="selectSecond($event)"></nt-timepicker-option>
+  </div>
+</nt-overlay>

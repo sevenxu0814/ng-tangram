@@ -1,0 +1,45 @@
+
+.nt-time-panel {
+  height: 180px;
+}
+
+@mixin nt-timepicker {
+  .nt-timepicker {
+    position: relative;
+    display: block;
+  }
+  .nt-timepicker-option {
+
+    &:last-child .nt-timepicker-panel{
+      border-right: none;
+    }
+  }
+  .nt-timepicker-panel {
+    width: 55px;
+    height: 180px;
+    overflow-y: auto;
+    display: inline-block;
+    border-right: 1px solid #cacaca;
+    padding-bottom: 150px;
+
+    .nt-timepicker-item {
+      height: 30px;
+      line-height: 30px;
+      padding: 0 .5rem;
+      cursor: pointer;
+      // border: 1px solid red;
+      &:hover {
+        background: get-color(primary);
+        a {
+          color: #fff;
+        }
+      }
+      &.active {
+        background: $light-gray;
+        a {
+          color: #333;
+        }
+      }
+    }
+  }
+}

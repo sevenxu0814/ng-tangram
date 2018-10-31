@@ -32,4 +32,5 @@ export const COMPONENTS_ROUTES: Routes = [
   // { path: 'timepicker', loadChildren: './time-picker/time-picker.module#TimePickerDocumentModule', data: { title: 'TimePicker ' } },
   { path: 'table', loadChildren: './table/table.module#TableDocumentModule', data: { title: 'Table 表格' } },
   { path: 'tooltip', loadChildren: './tooltip/tooltip.module#TooltipDocumentModule', data: { title: 'Tooltip 提示' } },
+  { path: 'timepicker', loadChildren: './timepicker/timepicker.module#TimePickerDocumentModule', data: { title: 'TimePicker 时间选择器' } }
 ];

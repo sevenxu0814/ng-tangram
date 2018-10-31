@@ -1,0 +1,11 @@
+<div class="nt-timepicker-panel" #panel>
+  <!-- <ul> -->
+    <div #options
+      class="nt-timepicker-item"
+      [class.active]="targetValue === second"
+      *ngFor="let second of time"
+      (click)="select(second)">
+      <a>{{second}}</a>
+  </div>
+  <!-- </ul> -->
+</div>

@@ -21,6 +21,7 @@
 @import 'select/select';
 @import 'table/table';
 @import 'tooltip/tooltip';
+@import 'timepicker/timepicker';
 
 @mixin ng-tangram {
 
@@ -61,5 +62,6 @@
   @include nt-table;
   @include nt-tooltip;
   @include nt-input-group;
+  @include nt-timepicker;
 }
 
