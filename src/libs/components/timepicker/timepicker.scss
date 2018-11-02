@@ -7,25 +7,27 @@
   .nt-timepicker {
     position: relative;
     display: block;
+    margin-bottom: 20px;
   }
   .nt-timepicker-option {
-
     &:last-child .nt-timepicker-panel{
       border-right: none;
     }
   }
   .nt-timepicker-panel {
-    width: 55px;
+    width: 56px;
     height: 180px;
-    overflow-y: auto;
+    overflow: hidden;
     display: inline-block;
     border-right: 1px solid #cacaca;
     padding-bottom: 150px;
-
+    &:hover{
+      overflow-y: auto;
+    }
     .nt-timepicker-item {
       height: 30px;
       line-height: 30px;
-      padding: 0 .5rem;
+      padding: 0 .8rem;
       cursor: pointer;
       // border: 1px solid red;
       &:hover {

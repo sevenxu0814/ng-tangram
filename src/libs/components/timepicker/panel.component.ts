@@ -8,7 +8,7 @@ import { NtOptionParentComponent, NT_OPTION_PARENT_COMPONENT } from '@ng-tangram
     { provide: NT_OPTION_PARENT_COMPONENT, useExisting: NtTimePickerPanelComponent },
   ]
 })
-export class NtTimePickerPanelComponent implements OnInit, NtOptionParentComponent {
+export class NtTimePickerPanelComponent implements OnInit {
 
   constructor() { }
 

@@ -1,7 +1,8 @@
 import { transition, trigger } from '@angular/animations';
 import { CdkOverlayOrigin, ConnectedOverlayPositionChange } from '@angular/cdk/overlay';
 import {
-    Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation, Optional, Self
+  Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation, Optional, Self,
+  NgZone
 } from '@angular/core';
 import { fadeIn, fadeOut } from '@ng-tangram/animate/fading';
 import { NtOverlayComponent } from '@ng-tangram/components/core/overlay/overlay.component';
@@ -13,6 +14,9 @@ import { ControlValueAccessor, NgControl } from '@angular/forms';
   selector: 'nt-timepicker',
   templateUrl: './timepicker.component.html',
   encapsulation: ViewEncapsulation.None,
+  providers: [
+    { provide: NtFormFieldControl, useExisting: NtTimePickerComponent }
+  ],
   host: {
     'class': 'nt-timepicker nt-form-control',
     '[class.focus]': 'overlay.isOpen'
@@ -24,12 +28,28 @@ import { ControlValueAccessor, NgControl } from '@angular/forms';
     ])
   ],
 })
-export class NtTimePickerComponent<D> extends NtFormFieldControl<D> implements OnInit, ControlValueAccessor {
+export class NtTimePickerComponent extends NtFormFieldControl<string> implements ControlValueAccessor {
 
   readonly origin: CdkOverlayOrigin;
 
-  @Input() placeholder: string;
+  private _format: string = 'HH:mm:ss';
+  hourEnabled = true;
+  minuteEnabled = true;
+  secondEnabled = true;
+
+  @Input() placeholder: string = '';
   @Input() disabled: boolean;
+  @Input()
+  set format(value: string) {
+    this._format = value;
+    const charSet = new Set(value);
+    this.hourEnabled = charSet.has('H') || charSet.has('h');
+    this.minuteEnabled = charSet.has('m');
+    this.secondEnabled = charSet.has('s');
+  }
+  get format() {
+    return this._format;
+  }
 
   @Output() afterOpen = new EventEmitter<any>();
   @Output() afterClosed = new EventEmitter<any>();
@@ -40,8 +60,6 @@ export class NtTimePickerComponent<D> extends NtFormFieldControl<D> implements O
   @Output() positionChange = new EventEmitter<ConnectedOverlayPositionChange>();
 
   @ViewChild(NtOverlayComponent) overlay: NtOverlayComponent;
-  @ViewChild('inputElement') inputElement: ElementRef;
-  @ViewChild('hourPanel') hourPanel: ElementRef;
 
   hours: any = [
     '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10',
@@ -57,20 +75,22 @@ export class NtTimePickerComponent<D> extends NtFormFieldControl<D> implements O
     '41', '42', '43', '44', '45', '46', '47', '48', '49', '50',
     '51', '52', '53', '54', '55', '56', '57', '58', '59'
   ];
-  currentTime: Date = new Date();
-  value: D;
 
-  hour: string;
-  minute: string;
-  second: string;
+  value: string;
+
+  hour: string = '00';
+  minute: string = '00';
+  second: string = '00';
 
   /** Emits when the value changes (either due to user input or programmatic change). */
-  private _valueChange = new EventEmitter<D | null>();
-  private _onChange: (value: any) => void = () => {};
-  private _onTouched = () => {};
+  private _valueChange = new EventEmitter<string | null>();
+  private _onChange: (value: any) => void = () => { };
+  private _onTouched = () => { };
 
   constructor(
     private _elementRef: ElementRef,
+    private ngZone: NgZone,
+
     @Self() @Optional() public ngControl: NgControl
   ) {
     super();
@@ -80,27 +100,11 @@ export class NtTimePickerComponent<D> extends NtFormFieldControl<D> implements O
     }
   }
 
-  ngOnInit() {
-  }
-
-  ngAfterContentInit() {
-    console.log(1);
-    this.createTime();
-  }
-
-  createTime() {
-    this.hour = this.hour || this.checkTime(new Date().getHours());
-    this.minute = this.minute || this.checkTime(new Date().getMinutes());
-    this.second = this.second || this.checkTime(new Date().getSeconds());
-    this.inputElement.nativeElement.value = `${this.hour}:${this.minute}:${this.second}`;
-  }
-
-  checkTime(i: any) {
-    if (i < 10) { i = "0" + i; }
-    return i + '';
-  }
-
-  writeValue(value: D) {
+  writeValue(value: string ) {
+    let time = value.split(':');
+    this.hour = time[0] ? time[0] : '00';
+    this.minute = time[1] ? time[1] : '00';
+    this.second = time[2] ? time[2] : '00';
     this.value = value;
   }
 
@@ -124,11 +128,12 @@ export class NtTimePickerComponent<D> extends NtFormFieldControl<D> implements O
 
   _afterClosed(event: any) {
     this.afterClosed.next(event);
+    this._onChange(this.value);
   }
 
   _beforeOpen(event: any) {
     this.beforeOpen.next(event);
-    // this.options.toArray().for
+
   }
 
   _beforeClosed(event: any) {
@@ -140,14 +145,40 @@ export class NtTimePickerComponent<D> extends NtFormFieldControl<D> implements O
   }
 
   selectHour(data: any) {
-    console.log('hour', data);
+    this.hour = data;
+    this.createTime();
+    this._onChange(this.createTime());
   }
 
   selectMinute(data: any) {
-    console.log('minute', data);
+    this.minute = data;
+    this.createTime();
+    this._onChange(this.createTime());
   }
 
   selectSecond(data: any) {
-    console.log('second', data);
+    this.second = data;
+    this.createTime();
+    this._onChange(this.createTime());
+  }
+
+  createTime() {
+    let time: string[] = [];
+    if (this.hourEnabled) {
+      time.push(this.hour);
+    }
+    if (this.minuteEnabled) {
+      time.push(this.minute);
+    }
+    if (this.secondEnabled) {
+      time.push(this.second);
+    }
+    return this.value = time.join(':');
+  }
+
+  clear() {
+    this.value = '';
+    this.hour = this.minute = this.second = '00';
+    this._onChange('');
   }
 }

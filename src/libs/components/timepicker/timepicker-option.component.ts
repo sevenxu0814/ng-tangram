@@ -1,8 +1,8 @@
 import {
-    Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewChildren,
-    ViewEncapsulation,
-    QueryList
+  Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewChildren,
+  ViewEncapsulation, QueryList, Inject, forwardRef, AfterViewInit
 } from '@angular/core';
+import { NtTimePickerComponent } from './timepicker.component';
 
 // 滚动距离动画帧数
 const FPS = 30;
@@ -18,49 +18,53 @@ const PERIOD = 200;
     'class': 'nt-timepicker-option'
   }
 })
-export class NtTimepickerOptionComponent implements OnInit {
+export class NtTimepickerOptionComponent implements OnInit, AfterViewInit {
+
+  private _targetValue: string;
 
   @Input() time: any;
 
   @Output() selectChange = new EventEmitter<any>();
 
-  @Input() targetValue: string;
+  @Input()
+  set targetValue(value: string) {
+    if (value) {
+      this._targetValue = value;
+      return;
+    }
+    this._targetValue = '00';
+  }
+  get targetValue() {
+    return this._targetValue;
+  }
 
   @ViewChild('panel') panel: ElementRef;
   @ViewChildren('options') options: QueryList<ElementRef>;
 
   isScrolling: boolean = false;
 
-  constructor() {
-
-  }
+  constructor(
+    @Inject(forwardRef(() => NtTimePickerComponent)) private _parent: NtTimePickerComponent
+  ) { }
 
   ngOnInit() {
-
+    this._parent.beforeOpen.subscribe(() => this.select(this.targetValue, true));
   }
 
-  ngAfterContentInit() {
-
-  }
   ngAfterViewInit() {
-    this.options.changes.subscribe(() => {
-      this.options.toArray();
-    });
-    // console.log(this.options);
-    // let data = this.options.find((item: ElementRef) => {
-    //   return item.nativeElement.innerText === this.targetValue;
-    // });
-    // console.log(data);
-    setTimeout(() => {
-      this.select(this.targetValue);
-    }, 1);
+    this.options.changes.subscribe(() => this.options.toArray());
   }
 
-  select(timeItem: any) {
+  select(timeItem: any, isInit: boolean = false) {
+
+    if (!timeItem) {
+      return;
+    }
 
     if (this.isScrolling) {
       return;
     }
+
     this.isScrolling = true;
 
     // 当前选中的时间
@@ -78,16 +82,17 @@ export class NtTimepickerOptionComponent implements OnInit {
       if (distance <= scrollDistance) {
         this.panel.nativeElement.scrollTop = panelScrollTop + distance;
       }
-    }, PERIOD / FPS);
+    }, !isInit ? PERIOD / FPS : 0);
 
     setTimeout(() => {
       this.panel.nativeElement.scrollTop = panelScrollTop + scrollDistance;
       clearInterval(timer);
       this.isScrolling = false;
-    }, PERIOD);
+    }, !isInit ? PERIOD : 0);
     // 滚动动画 - 结束
-
-    this.targetValue = timeItem;
-    this.selectChange.emit(timeItem);
+    if (!isInit) {
+      this.targetValue = timeItem;
+      this.selectChange.emit(timeItem);
+    }
   }
 }
