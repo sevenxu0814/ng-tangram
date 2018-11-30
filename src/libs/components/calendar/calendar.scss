@@ -1,0 +1,46 @@
+
+
+@mixin nt-calendar-cell {
+
+}
+
+@mixin nt-calendar {
+  .nt-calendar {
+    font-size: 1rem;
+    .nt-calendar-header {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    table {
+      table-layout: fixed;
+    }
+
+    tr {
+      // border-bottom: 0;
+      td:not(:last-child) {
+        border-right: $table-border;
+      }
+    }
+
+    .nt-calendar-header-cell {
+      text-align: right;
+      padding: 0.25rem 1.25rem;
+      font-weight: 500;
+
+      &.disabled {
+        color: $medium-gray;
+      }
+    }
+    .nt-calendar-cell {
+      height: 80px;
+      &.disabled {
+        color: $medium-gray;
+      }
+    }
+  }
+}
+

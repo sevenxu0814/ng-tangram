@@ -2,7 +2,7 @@
   "name": "components",
   "children": [
     "core", "forms", "icon", "upload",
-    "badge", "breadcrumbs", "button", "callout", "label",
+    "badge", "breadcrumbs", "button", "calendar", "callout", "label",
     "menu", "scrim", "pagination", "table",
     "dropdown", "popconfirm", "popover", "progress", "tooltip",
     "modal", "select", "input", "datepicker", "file", "picture", "radio", "checkbox"
@@ -12,6 +12,7 @@
     "@ng-tangram/components/badge": "nt.components.badge",
     "@ng-tangram/components/breadcrumbs": "nt.components.breadcrumbs",
     "@ng-tangram/components/button": "nt.components.button",
+    "@ng-tangram/components/calendar": "nt.components.calendar",
     "@ng-tangram/components/callout": "nt.components.callout",
     "@ng-tangram/components/checkbox": "nt.components.checkbox",
     "@ng-tangram/components/core": "nt.components.core",

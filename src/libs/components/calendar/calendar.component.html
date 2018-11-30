@@ -1,0 +1,29 @@
+<div class="nt-calendar-header">
+  <button class="button small" (click)="prevMonth()"><<</button>
+  {{ _monthLabel }}
+  <button class="button small" (click)="nextMonth()">>></button>
+</div>
+<table>
+  <tr>
+    <td class="nt-calendar-header-cell" *ngFor="let week of _weekdays">{{ week.narrow }}</td>
+  </tr>
+  <ng-container *ngFor="let _rows of _weeks">
+    <tr>
+      <td class="nt-calendar-header-cell" *ngFor="let week of _rows"
+        [class.disabled]="!week.enabled"
+        [class.selected]="week.value === _selectedDate && week.enabled"
+        [class.active]="_todayDate === week.value && week.enabled">
+        <span (click)="_dateSelected(week)">{{ week.displayValue }}</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="nt-calendar-cell" *ngFor="let week of _rows"
+        [class.disabled]="!week.enabled"
+        [class.selected]="week.value === _selectedDate && week.enabled"
+        [class.active]="_todayDate === week.value && week.enabled">
+      </td>
+    </tr>
+  </ng-container>
+</table>
+
+

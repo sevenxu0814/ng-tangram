@@ -3,6 +3,7 @@ export * from '@ng-tangram/components/icon';
 export * from '@ng-tangram/components/badge';
 export * from '@ng-tangram/components/breadcrumbs';
 export * from '@ng-tangram/components/button';
+export * from '@ng-tangram/components/calendar';
 export * from '@ng-tangram/components/callout';
 export * from '@ng-tangram/components/checkbox';
 export * from '@ng-tangram/components/core';

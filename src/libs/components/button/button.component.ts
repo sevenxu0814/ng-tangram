@@ -33,6 +33,10 @@ export class NtButtonComponent {
     }
   }
 
+  /**
+   * 因跟style属性重合，下一个小版本中取消这个 API
+   * @description 0.5.0
+   */
   @Input()
   set style(value: NtButtonStyle) { this._style = value; }
   get style() { return this._style; }
