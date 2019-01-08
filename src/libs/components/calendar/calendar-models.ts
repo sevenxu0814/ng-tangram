@@ -1,6 +1,6 @@
-export class NtCalendarCell {
+export class NtCalendarCell<D> {
   constructor(
-    public value: number,
+    public value: D,
     public displayValue: string,
     public enabled: boolean) { }
 }

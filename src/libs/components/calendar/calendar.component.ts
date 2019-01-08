@@ -1,276 +1,319 @@
 import {
-  AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChildren,
-  EventEmitter, Inject, Input, OnInit, Optional, Output, QueryList, ViewEncapsulation
+  AfterContentInit, ChangeDetectionStrategy, ChangeDetectorRef, Component,
+  ContentChildren, EventEmitter, Inject, Input, Optional, Output,
+  QueryList, ViewChild, ViewEncapsulation
 } from '@angular/core';
 import { DateAdapter, NT_DATE_FORMATS, NtDateFormats } from '@ng-tangram/components/core';
 
 import { createMissingDateImplError } from './calendar-errors';
 import { NtCalendarCell } from './calendar-models';
-import { NtCalendarCellDefDirective } from './cell.directive';
+import { NtCalendarCellDefDirective, NtCalendarOutletDirective } from './cell.directive';
+import { NtCalendarRowDefDirective, NtCalendarRowOutletDirective } from './row.directive';
 
 const DAYS_PER_WEEK = 7;
 
 const DAYS_MAX_ROWS = 6;
 
 @Component({
-  selector: 'nt-calendar',
-  templateUrl: 'calendar.component.html',
-  encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    'class': 'nt-calendar'
-  }
+selector: 'nt-calendar',
+templateUrl: 'calendar.component.html',
+styleUrls: ['calendar.scss'],
+encapsulation: ViewEncapsulation.None,
+changeDetection: ChangeDetectionStrategy.OnPush,
+host: {
+  'class': 'nt-calendar'
+}
 })
 export class NtCalendarComponent<D>  implements AfterContentInit {
 
-  /** The label for this month (e.g. "January 2017"). */
-  _monthLabel: string;
+/** The label for this month (e.g. "January 2017"). */
+_monthLabel: string;
 
-  /** Grid of calendar cells representing the dates of the month. */
-  _weeks: NtCalendarCell[][];
+/** Grid of calendar cells representing the dates of the month. */
+_weeks: NtCalendarCell<D>[][];
 
-  /** The number of blank cells in the first row before the 1st of the month. */
-  _firstWeekOffset: number;
+/** The number of blank cells in the first row before the 1st of the month. */
+_firstWeekOffset: number;
 
-  /**
-   * The date of the month that the currently selected Date falls on.
-   * Null if the currently selected Date is in another month.
-   */
-  _selectedDate: number | null;
+/**
+ * The date of the month that the currently selected Date falls on.
+ * Null if the currently selected Date is in another month.
+ */
+// _selectedDate: number | null;
 
-  /** The date of the month that today falls on. Null if today is in another month. */
-  _todayDate: number | null;
+/** The date of the month that today falls on. Null if today is in another month. */
+_todayDate: number | null;
 
-  /** The names of the weekdays. */
-  _weekdays: { long: string, narrow: string }[];
+/** The names of the weekdays. */
+_weekdays: { long: string, narrow: string }[];
 
-  private _defaultRowDef: NtCalendarCellDefDirective<D> | null;
+private _defaultRowDef: NtCalendarCellDefDirective<D> | null;
 
-  private _activeDate: D;
+private _activeDate: D;
 
-  @Input()
-  get activeDate(): D | null { return this._activeDate; }
-  set activeDate(value: D) {
-    const oldActiveDate = this._activeDate;
-    const validDate = this._getValidDateOrNull(this._dateAdapter.deserialize(value)) || this._dateAdapter.today();
-    this._activeDate = this._dateAdapter.clampDate(validDate, this.minDate, this.maxDate);
-    if (!this._hasSameMonthAndYear(oldActiveDate, this._activeDate)) {
-      this._init();
-    }
-  }
-
-  private _selected: D | null;
-
-  /** The currently selected date. */
-  @Input()
-  get selected(): D | null { return this._selected; }
-  set selected(value: D | null) {
-    this._selected = this._getValidDateOrNull(this._dateAdapter.deserialize(value));
-    this._selectedDate = this._getDateInCurrentMonth(this._selected);
-  }
-
-  private _minDate: D | null;
-
-  /** The minimum selectable date. */
-  @Input()
-  get minDate(): D | null { return this._minDate; }
-  set minDate(value: D | null) {
-    this._minDate = this._getValidDateOrNull(this._dateAdapter.deserialize(value));
-  }
-
-  private _maxDate: D | null;
-
-  /** The maximum selectable date. */
-  @Input()
-  get maxDate(): D | null { return this._maxDate; }
-  set maxDate(value: D | null) {
-    this._maxDate = this._getValidDateOrNull(this._dateAdapter.deserialize(value));
-  }
-
-  /** A function used to filter which dates are selectable. */
-  @Input() dateFilter: (date: D) => boolean;
-
-  /** Emits when a new date is selected. */
-  @Output() readonly selectedChange: EventEmitter<D | null> = new EventEmitter<D | null>();
-
-  /** Emits when any date is activated. */
-  @Output() readonly activeDateChange: EventEmitter<D> = new EventEmitter<D>();
-
-  @ContentChildren(NtCalendarCellDefDirective) _calendarCellDefs: QueryList<NtCalendarCellDefDirective<D>>;
-
-  constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
-    @Optional() private _dateAdapter: DateAdapter<D>,
-    @Optional() @Inject(NT_DATE_FORMATS) private _dateFormats: NtDateFormats) {
-
-    if (!this._dateAdapter) {
-      throw createMissingDateImplError('DateAdapter');
-    }
-
-    if (!this._dateFormats) {
-      throw createMissingDateImplError('NT_DATE_FORMATS');
-    }
-
-    const firstDayOfWeek = this._dateAdapter.getFirstDayOfWeek();
-    const narrowWeekdays = this._dateAdapter.getDayOfWeekNames('narrow');
-    const longWeekdays = this._dateAdapter.getDayOfWeekNames('long');
-
-    // Rotate the labels for days of the week based on the configured first day of the week.
-    let weekdays = longWeekdays.map((long, i) => {
-      return { long, narrow: narrowWeekdays[i] };
-    });
-    this._weekdays = weekdays.slice(firstDayOfWeek).concat(weekdays.slice(0, firstDayOfWeek));
-    this._activeDate = this._dateAdapter.today();
-  }
-
-  ngAfterContentInit(): void {
+@Input()
+get activeDate(): D | null { return this._activeDate; }
+set activeDate(value: D) {
+  const oldActiveDate = this._activeDate;
+  const validDate = this._getValidDateOrNull(this._dateAdapter.deserialize(value)) || this._dateAdapter.today();
+  this._activeDate = this._dateAdapter.clampDate(validDate, this.minDate, this.maxDate);
+  if (!this._hasSameMonthAndYear(oldActiveDate, this._activeDate)) {
     this._init();
   }
+}
 
-  /** Handles when a new date is selected. */
-  _dateSelected(cell: NtCalendarCell) {
-    if (cell.enabled && this._selectedDate !== cell.value) {
-      const selectedYear = this._dateAdapter.getYear(this.activeDate);
-      const selectedMonth = this._dateAdapter.getMonth(this.activeDate);
-      const selectedDate = this._dateAdapter.createDate(selectedYear, selectedMonth, cell.value);
-      this.selectedChange.emit(selectedDate);
+private _selected: D | null;
+
+/** The currently selected date. */
+@Input()
+get selected(): D | null { return this._selected; }
+set selected(value: D | null) {
+  this._selected = this._getValidDateOrNull(this._dateAdapter.deserialize(value));
+  // this._selectedDate = this._getDateInCurrentMonth(this._selected);
+}
+
+private _minDate: D | null;
+
+/** The minimum selectable date. */
+@Input()
+get minDate(): D | null { return this._minDate; }
+set minDate(value: D | null) {
+  this._minDate = this._getValidDateOrNull(this._dateAdapter.deserialize(value));
+}
+
+private _maxDate: D | null;
+
+/** The maximum selectable date. */
+@Input()
+get maxDate(): D | null { return this._maxDate; }
+set maxDate(value: D | null) {
+  this._maxDate = this._getValidDateOrNull(this._dateAdapter.deserialize(value));
+}
+
+/** A function used to filter which dates are selectable. */
+@Input() dateFilter: (date: D) => boolean;
+
+/** Emits when a new date is selected. */
+@Output() readonly selectedChange: EventEmitter<D | null> = new EventEmitter<D | null>();
+
+/** Emits when any date is activated. */
+@Output() readonly activeDateChange: EventEmitter<D> = new EventEmitter<D>();
+
+// 日历主干输出出口
+@ViewChild(NtCalendarOutletDirective) _calendarOutlet: NtCalendarOutletDirective;
+
+// 自定义单元格内容
+@ContentChildren(NtCalendarCellDefDirective) _calendarCellDefs: QueryList<NtCalendarCellDefDirective<D>>;
+
+// 行容器
+@ViewChild(NtCalendarRowDefDirective) _calendarRowDef: NtCalendarRowDefDirective<D>;
+
+constructor(
+  private _changeDetectorRef: ChangeDetectorRef,
+  @Optional() private _dateAdapter: DateAdapter<D>,
+  @Optional() @Inject(NT_DATE_FORMATS) private _dateFormats: NtDateFormats) {
+
+  if (!this._dateAdapter) {
+    throw createMissingDateImplError('DateAdapter');
+  }
+
+  if (!this._dateFormats) {
+    throw createMissingDateImplError('NT_DATE_FORMATS');
+  }
+
+  const firstDayOfWeek = this._dateAdapter.getFirstDayOfWeek();
+  const narrowWeekdays = this._dateAdapter.getDayOfWeekNames('narrow');
+  const longWeekdays = this._dateAdapter.getDayOfWeekNames('long');
+
+  // Rotate the labels for days of the week based on the configured first day of the week.
+  let weekdays = longWeekdays.map((long, i) => {
+    return { long, narrow: narrowWeekdays[i] };
+  });
+  this._weekdays = weekdays.slice(firstDayOfWeek).concat(weekdays.slice(0, firstDayOfWeek));
+  this._activeDate = this._dateAdapter.today();
+}
+
+ngAfterContentInit(): void {
+  this._init();
+}
+
+/** Handles when a new date is selected. */
+// _dateSelected(cell: NtCalendarCell<D>) {
+//   if (cell.enabled && this._selectedDate !== cell.value) {
+//     const selectedYear = this._dateAdapter.getYear(this.activeDate);
+//     const selectedMonth = this._dateAdapter.getMonth(this.activeDate);
+//     const selectedDate = this._dateAdapter.createDate(selectedYear, selectedMonth, cell.value);
+//     this.selectedChange.emit(selectedDate);
+//   }
+// }
+
+_init() {
+
+  // this._selectedDate = this._getDateInCurrentMonth(this.selected);
+
+  this._todayDate = this._getDateInCurrentMonth(this._dateAdapter.today());
+  this._monthLabel = this._dateAdapter.format(this.activeDate, this._dateFormats.display.monthYearLabel)
+    .toLocaleUpperCase();
+
+  const firstOfMonth = this._dateAdapter.createDate(this._dateAdapter.getYear(this.activeDate),
+    this._dateAdapter.getMonth(this.activeDate), 1);
+
+  this._firstWeekOffset = (DAYS_PER_WEEK + this._dateAdapter.getDayOfWeek(firstOfMonth) -
+    this._dateAdapter.getFirstDayOfWeek()) % DAYS_PER_WEEK;
+
+  this._createWeekCells();
+  this._changeDetectorRef.markForCheck();
+}
+
+prevMonth() {
+  this._calendarOutlet.viewContainerRef.clear();
+  this.activeDate = this._dateAdapter.addCalendarMonths(this._activeDate, -1);
+  this._changeDetectorRef.markForCheck();
+}
+
+nextMonth() {
+  this._calendarOutlet.viewContainerRef.clear();
+  this.activeDate = this._dateAdapter.addCalendarMonths(this._activeDate, 1);
+  this._changeDetectorRef.markForCheck();
+}
+
+// _todaySelected() {
+//   this.selectedChange.emit(this._dateAdapter.today());
+// }
+
+// _isTodaySelected() {
+//   return this._dateAdapter.sameDate(this.selected, this._dateAdapter.today());
+// }
+
+/** Creates MatCalendarCells for the dates in this month. */
+private _createWeekCells() {
+  const daysInMonth = this._dateAdapter.getNumDaysInMonth(this.activeDate);
+  const dateNames = this._dateAdapter.getDateNames();
+
+  this._weeks = [[]];
+
+  for (let i = 0, cell = this._firstWeekOffset; i < daysInMonth; i++ , cell++) {
+    if (cell === DAYS_PER_WEEK) {
+      this._weeks.push([]);
+      cell = 0;
     }
-  }
-
-  _init() {
-
-    this._selectedDate = this._getDateInCurrentMonth(this.selected);
-
-    this._todayDate = this._getDateInCurrentMonth(this._dateAdapter.today());
-    this._monthLabel = this._dateAdapter.format(this.activeDate, this._dateFormats.display.monthYearLabel)
-      .toLocaleUpperCase();
-
-    const firstOfMonth = this._dateAdapter.createDate(this._dateAdapter.getYear(this.activeDate),
-      this._dateAdapter.getMonth(this.activeDate), 1);
-
-    this._firstWeekOffset = (DAYS_PER_WEEK + this._dateAdapter.getDayOfWeek(firstOfMonth) -
-      this._dateAdapter.getFirstDayOfWeek()) % DAYS_PER_WEEK;
-
-    this._createWeekCells();
-    this._changeDetectorRef.markForCheck();
-  }
-
-  prevMonth() {
-    this.activeDate = this._dateAdapter.addCalendarMonths(this._activeDate, -1);
-    // this._changeDetectorRef.markForCheck();
-  }
-
-  nextMonth() {
-    this.activeDate = this._dateAdapter.addCalendarMonths(this._activeDate, 1);
-    // this._changeDetectorRef.markForCheck();
-  }
-
-  // _todaySelected() {
-  //   this.selectedChange.emit(this._dateAdapter.today());
-  // }
-
-  // _isTodaySelected() {
-  //   return this._dateAdapter.sameDate(this.selected, this._dateAdapter.today());
-  // }
-
-  /** Creates MatCalendarCells for the dates in this month. */
-  private _createWeekCells() {
-    const daysInMonth = this._dateAdapter.getNumDaysInMonth(this.activeDate);
-    const dateNames = this._dateAdapter.getDateNames();
-
-    this._weeks = [[]];
-
-    for (let i = 0, cell = this._firstWeekOffset; i < daysInMonth; i++ , cell++) {
-      if (cell === DAYS_PER_WEEK) {
-        this._weeks.push([]);
-        cell = 0;
-      }
-      const date = this._dateAdapter.createDate(this._dateAdapter.getYear(this.activeDate), this._dateAdapter.getMonth(this.activeDate), i + 1);
-      const enabled = this._shouldEnableDate(date);
-      this._weeks[this._weeks.length - 1].push(new NtCalendarCell(i + 1, dateNames[i], enabled));
-    }
-
-    this._fillBeforeCells();
-    this._fillAfterCells();
-  }
-
-  private _getWeekOffset() {
-    const firstDayForCurrentMonth = this._dateAdapter.createDate(
+    const date = this._dateAdapter.createDate(
       this._dateAdapter.getYear(this.activeDate),
-      this._dateAdapter.getMonth(this.activeDate), 1);
-
-    const firstDayForWeek = this._dateAdapter.getDayOfWeek(firstDayForCurrentMonth);
-
-    return firstDayForWeek - this._dateAdapter.getFirstDayOfWeek() >= 0
-      ? firstDayForWeek - this._dateAdapter.getFirstDayOfWeek()
-      : firstDayForWeek - this._dateAdapter.getFirstDayOfWeek() + DAYS_PER_WEEK;
+      this._dateAdapter.getMonth(this.activeDate),
+      i + 1);
+    const enabled = this._shouldEnableDate(date);
+    this._weeks[this._weeks.length - 1].push(new NtCalendarCell<D>(date, dateNames[i], enabled));
   }
 
-  /** 在填满模式下 补充首行列 */
-  private _fillBeforeCells(): void {
+  this._fillBeforeCells();
+  this._fillAfterCells();
+  this._createCalendar();
+}
 
-    const beforeMonth = this._dateAdapter.addCalendarMonths(this._dateAdapter.clone(this.activeDate), -1);
-    const daysInBeforeMonth = this._dateAdapter.getNumDaysInMonth(beforeMonth);
-    const dateNames = this._dateAdapter.getDateNames();
-    const beforeWeeks: NtCalendarCell[] = [];
+private _getWeekOffset() {
+  const firstDayForCurrentMonth = this._dateAdapter.createDate(
+    this._dateAdapter.getYear(this.activeDate),
+    this._dateAdapter.getMonth(this.activeDate), 1);
 
-    for (let i = daysInBeforeMonth - this._firstWeekOffset; i < daysInBeforeMonth; i++) {
-      beforeWeeks.push(new NtCalendarCell(i + 1, dateNames[i], false));
-    }
+  const firstDayForWeek = this._dateAdapter.getDayOfWeek(firstDayForCurrentMonth);
 
-    this._weeks[0] = beforeWeeks.concat(this._weeks[0]);
+  return firstDayForWeek - this._dateAdapter.getFirstDayOfWeek() >= 0
+    ? firstDayForWeek - this._dateAdapter.getFirstDayOfWeek()
+    : firstDayForWeek - this._dateAdapter.getFirstDayOfWeek() + DAYS_PER_WEEK;
+}
+
+/** 在填满模式下 补充首行列 */
+private _fillBeforeCells(): void {
+
+  const beforeMonth = this._dateAdapter.addCalendarMonths(this._dateAdapter.clone(this.activeDate), -1);
+  const daysInBeforeMonth = this._dateAdapter.getNumDaysInMonth(beforeMonth);
+  const dateNames = this._dateAdapter.getDateNames();
+  const beforeWeeks: NtCalendarCell<D>[] = [];
+
+  for (let i = daysInBeforeMonth - this._firstWeekOffset; i < daysInBeforeMonth; i++) {
+    const date = this._dateAdapter.createDate(
+      this._dateAdapter.getYear(beforeMonth),
+      this._dateAdapter.getMonth(beforeMonth),
+      i + 1);
+    beforeWeeks.push(new NtCalendarCell<D>(date, dateNames[i], false));
   }
 
-  /** 在填满模式下 补充尾部列 */
-  private _fillAfterCells(): void {
+  this._weeks[0] = beforeWeeks.concat(this._weeks[0]);
+}
 
-    const afterMonth = this._dateAdapter.addCalendarMonths(this._dateAdapter.clone(this.activeDate), 1);
-    const lastRow = this._weeks[this._weeks.length - 1];
-    const dateNames = this._dateAdapter.getDateNames();
-    const afterWeeks: NtCalendarCell[] = [], afterRows: NtCalendarCell[] = [];
+/** 在填满模式下 补充尾部列 */
+private _fillAfterCells(): void {
 
-    for (let i = 0; i < DAYS_PER_WEEK - lastRow.length; i++) {
-      afterWeeks.push(new NtCalendarCell(i + 1, dateNames[i], false));
-    }
-
-    lastRow.push(...afterWeeks);
-
-    for (let i = 0; i < DAYS_PER_WEEK * (DAYS_MAX_ROWS - this._weeks.length); i++) {
-      afterRows.push(new NtCalendarCell(afterWeeks.length + i + 1, dateNames[afterWeeks.length + i], false));
-    }
-
-    this._weeks.push(...afterRows.map(_ => afterRows.splice(0, DAYS_PER_WEEK)).filter(row => !!row));
+  const afterMonth = this._dateAdapter.addCalendarMonths(this._dateAdapter.clone(this.activeDate), 1);
+  console.log(afterMonth);
+  const lastRow = this._weeks[this._weeks.length - 1];
+  const dateNames = this._dateAdapter.getDateNames();
+  const afterWeeks: NtCalendarCell<D>[] = [], afterRows: NtCalendarCell<D>[] = [];
+console.log(lastRow);
+  for (let i = 0; i < DAYS_PER_WEEK - lastRow.length; i++) {
+    const date = this._dateAdapter.createDate(
+      this._dateAdapter.getYear(this._dateAdapter.clone(this.activeDate)),
+      this._dateAdapter.getMonth(this._dateAdapter.clone(this.activeDate)),
+      i + 1);
+    afterWeeks.push(new NtCalendarCell<D>(date, dateNames[i], false));
   }
 
+  lastRow.push(...afterWeeks);
 
-  /** Date filter for the month */
-  private _shouldEnableDate(date: D): boolean {
-    return !!date &&
-      (!this.dateFilter || this.dateFilter(date)) &&
-      (!this.minDate || this._dateAdapter.compareDate(date, this.minDate) >= 0) &&
-      (!this.maxDate || this._dateAdapter.compareDate(date, this.maxDate) <= 0);
+  for (let i = 0; i < DAYS_PER_WEEK * (DAYS_MAX_ROWS - this._weeks.length); i++) {
+    const date = this._dateAdapter.createDate(
+      this._dateAdapter.getYear(this._dateAdapter.clone(this.activeDate)),
+      this._dateAdapter.getMonth(this._dateAdapter.clone(this.activeDate)),
+      afterWeeks.length + i + 1);
+    afterRows.push(new NtCalendarCell<D>(date, dateNames[afterWeeks.length + i], false));
   }
 
-  /**
-   * Gets the date in this month that the given Date falls on.
-   * Returns null if the given Date is in another month.
-   */
-  private _getDateInCurrentMonth(date: D | null): number | null {
-    return date && this._hasSameMonthAndYear(date, this.activeDate) ?
-      this._dateAdapter.getDate(date) : null;
-  }
+  this._weeks.push(...afterRows.map(_ => afterRows.splice(0, DAYS_PER_WEEK)).filter(row => !!row));
+}
 
-  /** Checks whether the 2 dates are non-null and fall within the same month of the same year. */
-  private _hasSameMonthAndYear(d1: D | null, d2: D | null): boolean {
-    return !!(d1 && d2 && this._dateAdapter.getMonth(d1) === this._dateAdapter.getMonth(d2) &&
-      this._dateAdapter.getYear(d1) === this._dateAdapter.getYear(d2));
-  }
 
-  /**
-   * @param obj The object to check.
-   * @returns The given object if it is both a date instance and valid, otherwise null.
-   */
-  private _getValidDateOrNull(obj: any): D | null {
-    return (this._dateAdapter.isDateInstance(obj) && this._dateAdapter.isValid(obj)) ? obj : null;
-  }
+/** Date filter for the month */
+private _shouldEnableDate(date: D): boolean {
+  return !!date &&
+    (!this.dateFilter || this.dateFilter(date)) &&
+    (!this.minDate || this._dateAdapter.compareDate(date, this.minDate) >= 0) &&
+    (!this.maxDate || this._dateAdapter.compareDate(date, this.maxDate) <= 0);
+}
+
+/**
+ * Gets the date in this month that the given Date falls on.
+ * Returns null if the given Date is in another month.
+ */
+private _getDateInCurrentMonth(date: D | null): number | null {
+  return date && this._hasSameMonthAndYear(date, this.activeDate) ?
+    this._dateAdapter.getDate(date) : null;
+}
+
+/** Checks whether the 2 dates are non-null and fall within the same month of the same year. */
+private _hasSameMonthAndYear(d1: D | null, d2: D | null): boolean {
+  return !!(d1 && d2 && this._dateAdapter.getMonth(d1) === this._dateAdapter.getMonth(d2) &&
+    this._dateAdapter.getYear(d1) === this._dateAdapter.getYear(d2));
+}
+
+/**
+ * @param obj The object to check.
+ * @returns The given object if it is both a date instance and valid, otherwise null.
+ */
+private _getValidDateOrNull(obj: any): D | null {
+  return (this._dateAdapter.isDateInstance(obj) && this._dateAdapter.isValid(obj)) ? obj : null;
+}
+
+/**
+ * 动态创建日历结构
+ */
+_createCalendar() {
+  this._weeks.forEach((rows: NtCalendarCell<D>[]) => {
+    this._calendarOutlet.viewContainerRef.createEmbeddedView(this._calendarRowDef.template);
+    rows.forEach((cell: NtCalendarCell<D>) => {
+      this._calendarCellDefs.toArray().forEach((template: NtCalendarCellDefDirective<any>) => {
+        NtCalendarRowOutletDirective.mostRecentCellOutlet._viewContainer.createEmbeddedView(template.template, { $implicit: cell });
+      });
+    });
+  });
+}
 }

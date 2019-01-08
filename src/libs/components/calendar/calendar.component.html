@@ -1,29 +1,22 @@
 <div class="nt-calendar-header">
-  <button class="button small" (click)="prevMonth()"><<</button>
-  {{ _monthLabel }}
-  <button class="button small" (click)="nextMonth()">>></button>
+  <button type="button" class="button hollow primary margin-bottom-0 nt-calendar-button" (click)="prevMonth()">
+    {{'<'}}
+  </button>
+  <span class="nt-calendar-month">{{ _monthLabel }}</span>
+  <button type="button" class="button hollow primary margin-bottom-0 nt-calendar-button" (click)="nextMonth()">
+    {{'>'}}
+  </button>
 </div>
-<table>
-  <tr>
-    <td class="nt-calendar-header-cell" *ngFor="let week of _weekdays">{{ week.narrow }}</td>
-  </tr>
-  <ng-container *ngFor="let _rows of _weeks">
-    <tr>
-      <td class="nt-calendar-header-cell" *ngFor="let week of _rows"
-        [class.disabled]="!week.enabled"
-        [class.selected]="week.value === _selectedDate && week.enabled"
-        [class.active]="_todayDate === week.value && week.enabled">
-        <span (click)="_dateSelected(week)">{{ week.displayValue }}</span>
-      </td>
-    </tr>
-    <tr>
-      <td class="nt-calendar-cell" *ngFor="let week of _rows"
-        [class.disabled]="!week.enabled"
-        [class.selected]="week.value === _selectedDate && week.enabled"
-        [class.active]="_todayDate === week.value && week.enabled">
-      </td>
-    </tr>
-  </ng-container>
-</table>
 
+<!-- 日历主干 -->
+<div class="nt-calendar-body">
+  <div class="nt-calendar-row">
+    <div class="nt-calendar-cell" *ngFor="let week of _weekdays">
+      <div class="nt-calendar-header-cell">{{week.narrow}}</div>
+    </div>
+  </div>
+  <ng-container *ntCalendarOutlet></ng-container>
+</div>
 
+<!-- 行定义 -->
+<nt-calendar-row *ntCalendarRowDef></nt-calendar-row>

@@ -1,46 +1,76 @@
+@import 'src/styles/core/foundation';
 
-
-@mixin nt-calendar-cell {
-
-}
+$nt-calendar-color-symbol: #f8f8f8 !default;
+$nt-calendar-cell-padding: rem-calc(6 8) !default;
+$nt-calendar-selected-color: lighten(get-color(primary), 40%) !default;
+$nt-calendar-button-padding: .3rem 1rem;
+$nt-calendar-button-color: lighten(get-color(secondary), 15%) !default;
 
 @mixin nt-calendar {
-  .nt-calendar {
-    font-size: 1rem;
-    .nt-calendar-header {
-      text-align: center;
-      padding: 1.5rem;
-      font-size: 1.6rem;
-      font-weight: bold;
-      margin-bottom: 1rem;
-    }
 
-    table {
-      table-layout: fixed;
-    }
+  .nt-calendar-button {
+    padding: $nt-calendar-button-padding;
+    // background: $nt-calendar-button-color;
+    // color:#fff;
+  }
 
-    tr {
-      // border-bottom: 0;
-      td:not(:last-child) {
-        border-right: $table-border;
-      }
-    }
+  .nt-calendar-body {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #f2f2f2;
+    margin-bottom: 1rem;
+    border-radius: 2px;
+    background: #fff;
+    table-layout: fixed;
+  }
 
-    .nt-calendar-header-cell {
-      text-align: right;
-      padding: 0.25rem 1.25rem;
-      font-weight: 500;
+  .nt-calendar-header {
+    text-align: center;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .nt-calendar-month {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0 1rem;
+  }
 
-      &.disabled {
-        color: $medium-gray;
-      }
+  .nt-calendar-row {
+    display: table-row;
+    border-bottom: 1px solid #f2f2f2;
+  }
+
+  .nt-calendar-cell {
+    display: table-cell;
+    padding: 0;
+    vertical-align: middle;
+    &:not(:last-child) {
+      border-right: $table-border;
     }
-    .nt-calendar-cell {
-      height: 80px;
-      &.disabled {
-        color: $medium-gray;
-      }
+    &.disabled {
+      color: $medium-gray;
+    }
+  }
+
+  .nt-calendar-header-cell {
+    padding: $nt-calendar-cell-padding;
+    text-align: right;
+    vertical-align: middle;
+  }
+
+  .nt-calendar-content-cell {
+    height: 80px;
+    padding: $nt-calendar-cell-padding;
+    overflow-y: auto;
+    &.disabled {
+      color: $medium-gray;
     }
   }
 }
 
+// .nt-calendar {
+//   @include nt-calendar;
+// }
