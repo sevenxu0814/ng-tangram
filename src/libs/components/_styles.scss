@@ -25,6 +25,7 @@
 @import 'table/table';
 @import 'tooltip/tooltip';
 @import 'tree/tree';
+@import 'pagination/pagination';
 
 @mixin ng-tangram {
 
@@ -70,5 +71,6 @@
   @include nt-tooltip;
   @include nt-tree;
   @include nt-input-group;
+  @include nt-pagination-skip;
 }
 

@@ -6,7 +6,7 @@
 ## 代码演示
 
 <div class="grid-x grid-margin-x">
-  <div class="medium-6 large-6 cell">
+  <div class="medium-12 large-6 cell">
     <nt-example>
       <nt-example-showcase>
         <example-pagination-basic></example-pagination-basic>

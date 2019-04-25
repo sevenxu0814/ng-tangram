@@ -1,4 +1,4 @@
-import { coerceNumberProperty } from '@angular/cdk/coercion';
+import { coerceNumberProperty, coerceBooleanProperty } from '@angular/cdk/coercion';
 import {
   Component, EventEmitter, Inject, Input, Optional, Output, ViewEncapsulation
 } from '@angular/core';
@@ -55,10 +55,28 @@ export class NtPaginationComponent {
   set pageIndex(value: number) { this._pageIndex = coerceNumberProperty(value, 1); this._build(); }
   get pageIndex() { return this._pageIndex; }
 
+  private _showSkipButton = false;
+
+  @Input()
+  get showSkipButton(): boolean { return this._showSkipButton; }
+  set showSkipButton(value: boolean) { this._showSkipButton = coerceBooleanProperty(value); }
+
+  @Input()
+  set previousSkipLabel(value: string) { this._options.previousSkipLabel = value; }
+  get previousSkipLabel() { return this.options.previousSkipLabel; }
+
+  @Input()
+  set nextSkipLabel(value: string) { this._options.nextSkipLabel = value; }
+  get nextSkipLabel() { return this.options.nextSkipLabel; }
+
   @Output() pageChange = new EventEmitter<number>();
 
   constructor(@Optional() @Inject(NT_PAGINATION_CONFIG) defaultConfig?: NtPaginationConfig) {
     this._options = { ...this._options, ...defaultConfig || {} };
+  }
+
+  _skipPage(value: number) {
+    this._pageChange(value);
   }
 
   _pageChange(index: number) {

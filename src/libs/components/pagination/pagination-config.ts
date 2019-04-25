@@ -5,6 +5,8 @@ export class NtPaginationConfig {
   nextLabel: string = 'Next';
   size: number = 3;
   pageSize: number = 10;
+  previousSkipLabel: string = 'Goto';
+  nextSkipLabel: string = '';
 }
 
 export const NT_PAGINATION_CONFIG = new InjectionToken<NtPaginationConfig>('nt-pagination-config');

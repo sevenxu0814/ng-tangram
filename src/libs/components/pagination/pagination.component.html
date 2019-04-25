@@ -1,4 +1,4 @@
-<ul class="pagination">
+<ul class="pagination display-inline-block">
   <li class="pagination-previous disabled" *ngIf="pageIndex <= 1">{{ previousLabel }}</li>
   <li class="pagination-previous" *ngIf="pageIndex > 1"><a (click)="_pageChange(pageIndex - 1)">{{ previousLabel }}</a></li>
 
@@ -11,3 +11,9 @@
   <li class="pagination-next disabled" *ngIf="pageIndex >= totalPage">{{ nextLabel }}</li>
   <li class="pagination-next" *ngIf="pageIndex < totalPage"><a (click)="_pageChange(pageIndex + 1)">{{ nextLabel }}</a></li>
 </ul>
+
+<div class="nt-pagination-skip display-inline-block" *ngIf="showSkipButton">
+	{{previousSkipLabel}}
+	<input type="text" #input (keydown.enter)="_skipPage(input.value)">
+	{{nextSkipLabel}}
+</div>

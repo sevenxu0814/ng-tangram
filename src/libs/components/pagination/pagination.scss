@@ -1,0 +1,14 @@
+@mixin nt-pagination-skip {
+  .nt-pagination-skip {
+    display: inline-block;
+    input {
+      display: inline-block;
+      width: 50px;
+      padding: $pagination-item-padding;
+      height: $pagination-font-size * 2;
+    }
+  }
+}
+
+
+

@@ -4,7 +4,7 @@ import { OnInit } from '@angular/core';
 @Component({
   selector: 'example-pagination-basic',
   template: `
-    <nt-pagination [total]="total" [pageIndex]="no" [pageSize]="size"></nt-pagination>
+    <nt-pagination [total]="total" [pageIndex]="no" [pageSize]="size" showSkipButton="true" [options]="options"></nt-pagination>
   `
 })
 export class ExamplePaginationBasicComponent implements OnInit {
@@ -14,6 +14,11 @@ export class ExamplePaginationBasicComponent implements OnInit {
 
   no = 1;
   size = 10;
+
+  options = {
+    previousSkipLabel: '跳至',
+    nextSkipLabel: '页'
+  };
 
   ngOnInit() {
     setTimeout(() => {
